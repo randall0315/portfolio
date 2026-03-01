@@ -29,6 +29,14 @@
   .brand-sep{color:var(--text-3);font-weight:300;font-size:14px;}
   .brand-sub{font-size:10px;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-3);}
   .header-date{font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:0.06em;}
+  .price-status{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+  .price-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.06em;padding:3px 8px;border-radius:2px;border:1px solid var(--border2);}
+  .price-badge.loading{color:var(--text-3);border-color:var(--border);}
+  .price-badge.live{color:var(--green);border-color:rgba(90,184,120,0.25);background:rgba(90,184,120,0.05);}
+  .price-badge.stale{color:var(--gold);border-color:rgba(200,148,60,0.25);background:rgba(200,148,60,0.05);}
+  .price-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+  .price-dot.pulse{animation:dotPulse 1.4s ease-in-out infinite;}
+  @keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
 
   /* SUMMARY */
   .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);}
@@ -142,7 +150,10 @@
     <span class="brand-sep">—</span>
     <span class="brand-sub">Personal Portfolio</span>
   </div>
-  <div class="header-date">As of March 1, 2026</div>
+  <div class="price-status">
+    <div class="header-date">As of March 1, 2026</div>
+    <div class="price-badge loading" id="priceBadge"><span class="price-dot pulse"></span><span id="priceStatus">Fetching prices…</span></div>
+  </div>
 </div>
 
 <div class="summary">
@@ -281,61 +292,16 @@ const totalGain = H.reduce((s,h)=>s+h.totalGain,0);
 const todayPL   = H.reduce((s,h)=>s+h.dayPL,0);
 const maxW      = Math.max(...H.map(h=>h.mktVal/totalMV));
 
-document.getElementById('sv-total').textContent  = '$'+$c(totalMV);
-document.getElementById('sv-cost').textContent   = 'Cost basis: $'+$c(totalCost);
-document.getElementById('sv-gain').textContent   = $m(totalGain);
-document.getElementById('sv-gainpct').textContent= '+'+((totalGain/totalCost)*100).toFixed(1)+'% on cost';
-const todayEl = document.getElementById('sv-today');
-todayEl.className = 's-value '+(todayPL>=0?'positive':'negative');
-todayEl.textContent = $m(todayPL);
-document.getElementById('sv-todaypct').textContent = ((todayPL/(totalMV-todayPL))*100).toFixed(2)+'% today';
-
-/* ── CHART ──────────────────────────────────────────── */
-(function(){
-  const evts=[];
-  H.forEach(h=>h.lots.forEach(l=>{ if(l.s>0&&l.tc>0) evts.push({date:l.d,cost:l.tc}); }));
-  evts.sort((a,b)=>new Date(a.date.replace(/-/g,' '))-new Date(b.date.replace(/-/g,' ')));
-  let run=0; const lbls=['Jan \'21'], vals=[0];
-  evts.forEach(e=>{
-    run+=e.cost;
-    const d=new Date(e.date.replace(/-/g,' '));
-    lbls.push(d.toLocaleDateString('en-US',{month:'short',year:'2-digit'}).replace(' ',' \''));
-    vals.push(Math.round(run));
-  });
-  lbls.push('Mar \'26'); vals.push(Math.round(run));
-
-  const ctx=document.getElementById('costChart').getContext('2d');
-  const grad=ctx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba(200,148,60,0.22)'); grad.addColorStop(1,'rgba(200,148,60,0.00)');
-
-  const chart=new Chart(ctx,{
-    type:'line',
-    data:{labels:lbls,datasets:[
-      {label:'Cost Basis',data:vals,borderColor:'#c8943c',borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#e4b84a',fill:true,backgroundColor:grad,tension:0.15},
-      {label:'Market Value',data:Array(lbls.length-1).fill(null).concat([Math.round(totalMV)]),borderColor:'transparent',pointRadius:Array(lbls.length-1).fill(0).concat([8]),pointBackgroundColor:'#5ab878',pointHoverRadius:10,showLine:false,type:'scatter'}
-    ]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:false},
-        tooltip:{backgroundColor:'#1b1812',borderColor:'#302b1e',borderWidth:1,titleColor:'#8c8070',bodyColor:'#ede8db',titleFont:{family:"'IBM Plex Mono',monospace",size:9},bodyFont:{family:"'IBM Plex Mono',monospace",size:11},padding:10,
-          callbacks:{label:c=>{ if(c.datasetIndex===0) return ' $'+new Intl.NumberFormat('en-US').format(c.parsed.y)+' deployed'; return ' $'+new Intl.NumberFormat('en-US').format(c.parsed.y)+' market value'; }}
-        }
-      },
-      scales:{
-        x:{grid:{color:'rgba(38,34,24,0.6)',drawTicks:false},ticks:{color:'#504840',font:{family:"'IBM Plex Mono',monospace",size:8.5},maxTicksLimit:14,maxRotation:0},border:{color:'#262218'}},
-        y:{grid:{color:'rgba(38,34,24,0.6)',drawTicks:false},ticks:{color:'#504840',font:{family:"'IBM Plex Mono',monospace",size:8.5},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},border:{color:'#262218'}}
-      }
-    }
-  });
-})();
-
 /* ── SORT STATE ─────────────────────────────────────── */
 let sortCol='mktVal', sortDir='desc', expanded=null;
 
 /* ── RENDER ─────────────────────────────────────────── */
 function render(){
+  const tMV  = H.reduce((s,h)=>s+h.mktVal,0);
+  const tCost= H.reduce((s,h)=>s+h.totalCost,0);
+  const tGain= H.reduce((s,h)=>s+h.totalGain,0);
+  const tDay = H.reduce((s,h)=>s+h.dayPL,0);
+  const mxW  = Math.max(...H.map(h=>h.mktVal/tMV));
   const data=[...H].sort((a,b)=>{
     const av=a[sortCol],bv=b[sortCol];
     if(typeof av==='string') return sortDir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
@@ -346,7 +312,7 @@ function render(){
 
   data.forEach((h,i)=>{
     const gPct=h.totalGain/h.totalCost;
-    const w=h.mktVal/totalMV;
+    const w=h.mktVal/tMV;
     const isExp=expanded===h.ticker;
     let badge='';
     if(h.type==='etf')   badge='<span class="c-badge badge-etf">ETF</span>';
@@ -366,7 +332,7 @@ function render(){
       <td class="c-num">${$pr(h.price)}</td>
       <td class="c-num ${h.dayPct>=0?'positive':'negative'}">${$p(h.dayPct)}</td>
       <td class="c-num">${$m(h.mktVal)}</td>
-      <td><div class="w-wrap"><div class="w-bar"><div class="w-fill" style="width:${((w/maxW)*100).toFixed(1)}%"></div></div><span class="w-pct">${(w*100).toFixed(1)}%</span></div></td>
+      <td><div class="w-wrap"><div class="w-bar"><div class="w-fill" style="width:${((w/mxW)*100).toFixed(1)}%"></div></div><span class="w-pct">${(w*100).toFixed(1)}%</span></div></td>
       <td class="c-num ${h.totalGain>=0?'positive':'negative'}">${$m(h.totalGain)}</td>
       <td><span class="gain-pill ${gPct>=0?'positive':'negative'}">${gPct>=0?'+':'−'}${Math.abs(gPct*100).toFixed(1)}%</span></td>
       <td><div class="links-cell"><a class="lbtn" href="${h.news}" target="_blank" rel="noopener" onclick="event.stopPropagation()">News</a><a class="lbtn" href="${h.ir}" target="_blank" rel="noopener" onclick="event.stopPropagation()">IR</a></div></td>`;
@@ -424,17 +390,16 @@ function render(){
     tbody.appendChild(ltTr);
   });
 
-  // Totals row
   const tot=document.createElement('tr');
   tot.className='totals-row';
   tot.innerHTML=`
     <td colspan="2" style="font-family:var(--font-ui);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)">Total · 18 positions</td>
     <td></td><td></td><td></td>
-    <td class="c-num ${todayPL>=0?'positive':'negative'}">${$p(todayPL/(totalMV-todayPL))}</td>
-    <td class="c-num">$${$c(totalMV)}</td>
+    <td class="c-num ${tDay>=0?'positive':'negative'}">${$p(tDay/(tMV-tDay))}</td>
+    <td class="c-num">$${$c(tMV)}</td>
     <td><span class="w-pct" style="color:var(--text-2)">100%</span></td>
-    <td class="c-num positive">${$m(totalGain)}</td>
-    <td><span class="gain-pill positive">+${(totalGain/totalCost*100).toFixed(1)}%</span></td>
+    <td class="c-num ${tGain>=0?'positive':'negative'}">${$m(tGain)}</td>
+    <td><span class="gain-pill ${tGain>=0?'positive':'negative'}">${tGain>=0?'+':'−'}${Math.abs(tGain/tCost*100).toFixed(1)}%</span></td>
     <td></td>`;
   tbody.appendChild(tot);
 }
@@ -457,7 +422,132 @@ document.querySelectorAll('thead th[data-col]').forEach(th=>{
 });
 
 document.querySelector('[data-col="mktVal"]').classList.add('sort-desc');
+
+/* ── LIVE PRICES ─────────────────────────────────────── */
+let liveChart = null; // reference to chart for updating dot
+
+function recalcFromPrices() {
+  H.forEach(h => {
+    h.mktVal     = h.shares * h.price;
+    h.totalGain  = h.mktVal - h.totalCost;
+    h.dayPL      = h.shares * h.price * h.dayPct / (1 + h.dayPct);
+  });
+}
+
+function updateSummary() {
+  const tMV   = H.reduce((s,h)=>s+h.mktVal,0);
+  const tCost = H.reduce((s,h)=>s+h.totalCost,0);
+  const tGain = H.reduce((s,h)=>s+h.totalGain,0);
+  const tDay  = H.reduce((s,h)=>s+h.dayPL,0);
+  document.getElementById('sv-total').textContent   = '$'+$c(tMV);
+  document.getElementById('sv-cost').textContent    = 'Cost basis: $'+$c(tCost);
+  document.getElementById('sv-gain').textContent    = $m(tGain);
+  document.getElementById('sv-gainpct').textContent = (tGain>=0?'+':'') + ((tGain/tCost)*100).toFixed(1)+'% on cost';
+  const todayEl = document.getElementById('sv-today');
+  todayEl.className = 's-value '+(tDay>=0?'positive':'negative');
+  todayEl.textContent = $m(tDay);
+  document.getElementById('sv-todaypct').textContent = ((tDay/(tMV-tDay))*100).toFixed(2)+'% today';
+  // Update chart market value dot
+  if(liveChart) {
+    const ds = liveChart.data.datasets[1];
+    const len = ds.data.length;
+    ds.data[len-1] = Math.round(tMV);
+    liveChart.update('none');
+  }
+}
+
+function setBadge(state, text) {
+  const badge = document.getElementById('priceBadge');
+  const dot   = badge.querySelector('.price-dot');
+  const label = document.getElementById('priceStatus');
+  badge.className = 'price-badge ' + state;
+  dot.className   = 'price-dot' + (state==='loading'?' pulse':'');
+  label.textContent = text;
+}
+
+async function fetchLivePrices() {
+  const tickers = H.map(h => h.ticker).join(',');
+  const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}&fields=regularMarketPrice,regularMarketChangePercent`;
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(yahooUrl)}`;
+  try {
+    const res  = await fetch(proxyUrl);
+    if (!res.ok) throw new Error('Network response not ok');
+    const json = await res.json();
+    const quotes = json?.quoteResponse?.result;
+    if (!quotes || quotes.length === 0) throw new Error('No quotes returned');
+
+    let updated = 0;
+    quotes.forEach(q => {
+      const h = H.find(x => x.ticker === q.symbol);
+      if (h && q.regularMarketPrice) {
+        h.price  = q.regularMarketPrice;
+        h.dayPct = (q.regularMarketChangePercent || 0) / 100;
+        updated++;
+      }
+    });
+
+    recalcFromPrices();
+    updateSummary();
+    render();
+
+    const now = new Date();
+    const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    setBadge('live', `Live · ${updated}/18 · ${t}`);
+  } catch(e) {
+    console.warn('Price fetch failed:', e);
+    setBadge('stale', 'Static prices · Mar 1, 2026');
+    render(); // still render with static data
+  }
+}
+
+/* ── INIT ─────────────────────────────────────────────── */
+// Build chart with static data first, then fetch live prices
+(function buildChart(){
+  const evts=[];
+  H.forEach(h=>h.lots.forEach(l=>{ if(l.s>0&&l.tc>0) evts.push({date:l.d,cost:l.tc}); }));
+  evts.sort((a,b)=>new Date(a.date.replace(/-/g,' '))-new Date(b.date.replace(/-/g,' ')));
+  let run=0; const lbls=["Jan '21"], vals=[0];
+  evts.forEach(e=>{
+    run+=e.cost;
+    const d=new Date(e.date.replace(/-/g,' '));
+    lbls.push(d.toLocaleDateString('en-US',{month:'short',year:'2-digit'}).replace(' '," '"));
+    vals.push(Math.round(run));
+  });
+  lbls.push("Mar '26"); vals.push(Math.round(run));
+
+  const ctx=document.getElementById('costChart').getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(200,148,60,0.22)'); grad.addColorStop(1,'rgba(200,148,60,0.00)');
+
+  const tMV = H.reduce((s,h)=>s+h.mktVal,0);
+  liveChart = new Chart(ctx,{
+    type:'line',
+    data:{labels:lbls,datasets:[
+      {label:'Cost Basis',data:vals,borderColor:'#c8943c',borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#e4b84a',fill:true,backgroundColor:grad,tension:0.15},
+      {label:'Market Value',data:Array(lbls.length-1).fill(null).concat([Math.round(tMV)]),borderColor:'transparent',pointRadius:Array(lbls.length-1).fill(0).concat([8]),pointBackgroundColor:'#5ab878',pointHoverRadius:10,showLine:false,type:'scatter'}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1b1812',borderColor:'#302b1e',borderWidth:1,titleColor:'#8c8070',bodyColor:'#ede8db',titleFont:{family:"'IBM Plex Mono',monospace",size:9},bodyFont:{family:"'IBM Plex Mono',monospace",size:11},padding:10,
+          callbacks:{label:c=>{ if(c.datasetIndex===0) return ' $'+new Intl.NumberFormat('en-US').format(c.parsed.y)+' deployed'; return ' $'+new Intl.NumberFormat('en-US').format(c.parsed.y)+' market value'; }}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(38,34,24,0.6)',drawTicks:false},ticks:{color:'#504840',font:{family:"'IBM Plex Mono',monospace",size:8.5},maxTicksLimit:14,maxRotation:0},border:{color:'#262218'}},
+        y:{grid:{color:'rgba(38,34,24,0.6)',drawTicks:false},ticks:{color:'#504840',font:{family:"'IBM Plex Mono',monospace",size:8.5},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},border:{color:'#262218'}}
+      }
+    }
+  });
+})();
+
+// Render with static prices immediately so page isn't blank
+updateSummary();
 render();
+// Then fetch live prices
+fetchLivePrices();
 </script>
 </body>
 </html>

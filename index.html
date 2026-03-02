@@ -468,13 +468,14 @@ function setBadge(state, text) {
 
 async function fetchLivePrices() {
   const tickers = H.map(h => h.ticker).join(',');
-  const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}&fields=regularMarketPrice,regularMarketChangePercent`;
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(yahooUrl)}`;
+  const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`;
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
   try {
-    const res  = await fetch(proxyUrl);
+    const res  = await fetch(proxyUrl, {cache:'no-store'});
     if (!res.ok) throw new Error('Network response not ok');
-    const json = await res.json();
-    const quotes = json?.quoteResponse?.result;
+    const outer = await res.json();
+    const inner = JSON.parse(outer.contents);
+    const quotes = inner?.quoteResponse?.result;
     if (!quotes || quotes.length === 0) throw new Error('No quotes returned');
 
     let updated = 0;

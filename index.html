@@ -469,37 +469,65 @@ function setBadge(state, text) {
 async function fetchLivePrices() {
   const tickers = H.map(h => h.ticker).join(',');
   const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`;
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
-  try {
-    const res  = await fetch(proxyUrl, {cache:'no-store'});
-    if (!res.ok) throw new Error('Network response not ok');
-    const outer = await res.json();
-    const inner = JSON.parse(outer.contents);
-    const quotes = inner?.quoteResponse?.result;
-    if (!quotes || quotes.length === 0) throw new Error('No quotes returned');
 
-    let updated = 0;
-    quotes.forEach(q => {
-      const h = H.find(x => x.ticker === q.symbol);
-      if (h && q.regularMarketPrice) {
-        h.price  = q.regularMarketPrice;
-        h.dayPct = (q.regularMarketChangePercent || 0) / 100;
-        updated++;
-      }
-    });
+  // Try multiple proxies in sequence until one works
+  const proxies = [
+    { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`, wrap: false },
+    { url: `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`, wrap: true },
+    { url: `https://thingproxy.freeboard.io/fetch/${yahooUrl}`, wrap: false },
+    { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`, wrap: false },
+  ];
 
-    recalcFromPrices();
-    updateSummary();
-    render();
-
-    const now = new Date();
-    const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    setBadge('live', `Live · ${updated}/18 · ${t}`);
-  } catch(e) {
-    console.warn('Price fetch failed:', e);
-    setBadge('stale', 'Static prices · Mar 1, 2026');
-    render(); // still render with static data
+  async function tryProxy(proxy) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(proxy.url, { cache:'no-store', signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const raw = await res.json();
+      const data = proxy.wrap ? JSON.parse(raw.contents) : raw;
+      const quotes = data?.quoteResponse?.result;
+      if (!quotes || quotes.length === 0) throw new Error('No quotes');
+      return quotes;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  let quotes = null;
+  for (const proxy of proxies) {
+    try {
+      quotes = await tryProxy(proxy);
+      if (quotes) break;
+    } catch(e) {
+      console.warn('Proxy failed, trying next…', proxy.url, e.message);
+    }
+  }
+
+  if (!quotes) {
+    console.warn('All proxies failed');
+    setBadge('stale', 'Static prices · Mar 1, 2026');
+    render();
+    return;
+  }
+
+  let updated = 0;
+  quotes.forEach(q => {
+    const h = H.find(x => x.ticker === q.symbol);
+    if (h && q.regularMarketPrice) {
+      h.price  = q.regularMarketPrice;
+      h.dayPct = (q.regularMarketChangePercent || 0) / 100;
+      updated++;
+    }
+  });
+
+  recalcFromPrices();
+  updateSummary();
+  render();
+
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  setBadge('live', `Live · ${updated}/18 · ${t}`);
 }
 
 /* ── INIT ─────────────────────────────────────────────── */

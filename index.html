@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RJS — Personal Portfolio</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ede8db'/%3E%3Ctext x='16' y='23' font-family='Georgia%2C serif' font-size='20' font-weight='400' text-anchor='middle' fill='%230c0b08'%3EP%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF8WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuZjM1NGVmYywgMjAyMy8xMS8wOS0xMjowNTo1MyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDI1LjQgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RjQ4RkQ4NzY5QUY2MTFFRUJFNThDNjlGNTFBMkIwMUQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RjQ4RkQ4Nzc5QUY2MTFFRUJFNThDNjlGNTFBMkIwMUQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGNDhGRDg3NDlBRjYxMUVFQkU1OEM2OUY1MUEyQjAxRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpGNDhGRDg3NTlBRjYxMUVFQkU1OEM2OUY1MUEyQjAxRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pjj/URoAAAKtSURBVHic7doxAQAADMKg+TfdicACEiQJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBuAABHgplRgAAAABJRU5ErkJggg==">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Portfolio">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -467,67 +470,41 @@ function setBadge(state, text) {
 }
 
 async function fetchLivePrices() {
+  const APIKEY = '165252a307bb4b82b13e1f8fe210ebbb';
+  // Twelve Data supports batch quotes — fetch all tickers in one call
   const tickers = H.map(h => h.ticker).join(',');
-  const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`;
+  const url = `https://api.twelvedata.com/quote?symbol=${tickers}&apikey=${APIKEY}`;
+  try {
+    const res = await fetch(url, {cache:'no-store'});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
-  // Try multiple proxies in sequence until one works
-  const proxies = [
-    { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`, wrap: false },
-    { url: `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`, wrap: true },
-    { url: `https://thingproxy.freeboard.io/fetch/${yahooUrl}`, wrap: false },
-    { url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`, wrap: false },
-  ];
+    let updated = 0;
+    H.forEach(h => {
+      // Twelve Data returns either a single object or keyed by symbol for batch
+      const q = data[h.ticker] || (data.symbol === h.ticker ? data : null);
+      if (q && q.close && !q.code) {
+        h.price  = parseFloat(q.close);
+        const pctRaw = parseFloat(q.percent_change);
+        h.dayPct = isNaN(pctRaw) ? 0 : pctRaw / 100;
+        updated++;
+      }
+    });
 
-  async function tryProxy(proxy) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    try {
-      const res = await fetch(proxy.url, { cache:'no-store', signal: controller.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.json();
-      const data = proxy.wrap ? JSON.parse(raw.contents) : raw;
-      const quotes = data?.quoteResponse?.result;
-      if (!quotes || quotes.length === 0) throw new Error('No quotes');
-      return quotes;
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
+    if (updated === 0) throw new Error('No tickers updated');
 
-  let quotes = null;
-  for (const proxy of proxies) {
-    try {
-      quotes = await tryProxy(proxy);
-      if (quotes) break;
-    } catch(e) {
-      console.warn('Proxy failed, trying next…', proxy.url, e.message);
-    }
-  }
+    recalcFromPrices();
+    updateSummary();
+    render();
 
-  if (!quotes) {
-    console.warn('All proxies failed');
+    const now = new Date();
+    const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    setBadge('live', `Live · ${updated}/18 · ${t}`);
+  } catch(e) {
+    console.warn('Price fetch failed:', e);
     setBadge('stale', 'Static prices · Mar 1, 2026');
     render();
-    return;
   }
-
-  let updated = 0;
-  quotes.forEach(q => {
-    const h = H.find(x => x.ticker === q.symbol);
-    if (h && q.regularMarketPrice) {
-      h.price  = q.regularMarketPrice;
-      h.dayPct = (q.regularMarketChangePercent || 0) / 100;
-      updated++;
-    }
-  });
-
-  recalcFromPrices();
-  updateSummary();
-  render();
-
-  const now = new Date();
-  const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  setBadge('live', `Live · ${updated}/18 · ${t}`);
 }
 
 /* ── INIT ─────────────────────────────────────────────── */

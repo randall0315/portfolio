@@ -470,60 +470,28 @@ function setBadge(state, text) {
 }
 
 async function fetchLivePrices() {
-  const APIKEY = '165252a307bb4b82b13e1f8fe210ebbb';
-
-  // Exchange-listed tickers (NYSE/AMEX) — Twelve Data handles these natively
-  const listed  = ['NGD','AEM','VGZ','GLD','SLV','SLVR'];
-  // OTC/Pink sheet tickers — need exchange suffix
-  const otc     = ['BYAGF','AUMBF','FFMGF','WDOFF','BKRRF','AYASF','LGDTF','NFLDF','HWAUF','OCGSF','RGCCF','EMAUF'];
-
-  let updated = 0;
-
-  async function fetchBatch(symbols, suffix='') {
-    const symStr = symbols.map(s => s + suffix).join(',');
-    const url = `https://api.twelvedata.com/price?symbol=${symStr}&apikey=${APIKEY}`;
+  const APIKEY = 'f9ea8aecbc5447b09b7feb97cf0d5d5d';
+  // Twelve Data supports batch quotes — fetch all tickers in one call
+  const tickers = H.map(h => h.ticker).join(',');
+  const url = `https://api.twelvedata.com/quote?symbol=${tickers}&apikey=${APIKEY}`;
+  try {
     const res = await fetch(url, {cache:'no-store'});
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    console.log('Twelve Data response for', symStr, data);
 
-    symbols.forEach((ticker, i) => {
-      const key = ticker + suffix;
-      const q = data[key] || (symbols.length === 1 ? data : null);
-      if (q && q.price && !q.code) {
-        const h = H.find(x => x.ticker === ticker);
-        if (h) {
-          const newPrice = parseFloat(q.price);
-          if (!isNaN(newPrice) && newPrice > 0) {
-            // Calculate day % from previous close using stored price as baseline
-            const prevClose = h.price;
-            h.dayPct = prevClose > 0 ? (newPrice - prevClose) / prevClose : 0;
-            h.price = newPrice;
-            updated++;
-          }
-        }
+    let updated = 0;
+    H.forEach(h => {
+      // Twelve Data returns either a single object or keyed by symbol for batch
+      const q = data[h.ticker] || (data.symbol === h.ticker ? data : null);
+      if (q && q.close && !q.code) {
+        h.price  = parseFloat(q.close);
+        const pctRaw = parseFloat(q.percent_change);
+        h.dayPct = isNaN(pctRaw) ? 0 : pctRaw / 100;
+        updated++;
       }
     });
-  }
 
-  try {
-    // Fetch listed and OTC in parallel
-    await Promise.allSettled([
-      fetchBatch(listed, ''),
-      fetchBatch(otc, ':PINK'),
-    ]);
-
-    // If OTC came back empty, try without suffix
-    const otcUpdated = otc.filter(t => {
-      const h = H.find(x => x.ticker === t);
-      return h && h.dayPct !== 0;
-    });
-    if (otcUpdated.length === 0) {
-      console.log('Retrying OTC without suffix...');
-      await fetchBatch(otc, '');
-    }
-
-    if (updated === 0) throw new Error('No tickers updated after all attempts');
+    if (updated === 0) throw new Error('No tickers updated');
 
     recalcFromPrices();
     updateSummary();
@@ -532,7 +500,6 @@ async function fetchLivePrices() {
     const now = new Date();
     const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setBadge('live', `Live · ${updated}/18 · ${t}`);
-
   } catch(e) {
     console.warn('Price fetch failed:', e);
     setBadge('stale', 'Static prices · Mar 1, 2026');

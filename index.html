@@ -523,7 +523,7 @@ async function fetchLivePrices() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const q    = data['Global Quote'];
-      console.log(ticker, JSON.stringify(q).slice(0,120));
+      console.log(ticker, q ? q['05. price'] : 'no data');
       if (q && q['05. price'] && q['05. price'] !== '0.0000') {
         const newPrice = parseFloat(q['05. price']);
         const pctRaw   = parseFloat((q['10. change percent']||'').replace('%',''));
@@ -536,7 +536,7 @@ async function fetchLivePrices() {
         }
       }
     } catch(e) { console.warn('Failed:', ticker, e.message); }
-    if (i < tickers.length - 1) await new Promise(r => setTimeout(r, 300));
+    if (i < tickers.length - 1) await new Promise(r => setTimeout(r, 13000));
   }
 
   if (updated === 0) {

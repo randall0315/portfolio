@@ -178,7 +178,7 @@
   </div>
   <div class="summary-card">
     <div class="s-label">Positions</div>
-    <div class="s-value" style="color:var(--text)">18</div>
+    <div class="s-value" style="color:var(--text)">19</div>
     <div class="s-sub">Precious metals focus</div>
   </div>
 </div>
@@ -217,7 +217,7 @@
 </div>
 
 <div class="footer">
-  <span class="footer-note">Prices as of March 1, 2026 · Koyfin export · USD unless otherwise noted · LT = held >1yr · ST = held <1yr</span>
+  <span class="footer-note">Updated Mar 3, 2026 · USD unless otherwise noted · LT = held >1yr · ST = held <1yr</span>
   <span class="footer-note">RJS · Personal Portfolio · Private &amp; Confidential</span>
 </div>
 
@@ -236,15 +236,15 @@ const H = [
   {ticker:'AEM',name:'Agnico Eagle Mines Ltd.',type:'major',shares:250,avgCost:89.4336,price:251.600,dayPct:0.0211,dayPL:1300,mktVal:62900,totalCost:22358.40,totalGain:40541.60,
    news:'https://finance.yahoo.com/quote/AEM/news/',ir:'https://www.agnicoeagle.com/English/investors/',
    lots:[{d:'Dec-13-2021',s:50,c:48.62,tc:2431},{d:'Jan-07-2022',s:50,c:49.85,tc:2492.50},{d:'Jan-21-2022',s:20,c:52.50,tc:1050},{d:'Jan-28-2022',s:25,c:46.47,tc:1161.75},{d:'Nov-10-2022',s:10,c:46.65,tc:466.50},{d:'Aug-25-2025',s:30,c:136.41,tc:4092.30},{d:'Oct-20-2025',s:10,c:177.80,tc:1778},{d:'Oct-21-2025',s:55,c:161.57,tc:8886.35}]},
-  {ticker:'FFMGF',name:'First Mining Gold Corp.',type:'junior',shares:125000,avgCost:0.2006,price:0.485,dayPct:0.0354,dayPL:2075,mktVal:60625,totalCost:25078.54,totalGain:35546.46,
+  {ticker:'FFMGF',name:'First Mining Gold Corp.',type:'junior',shares:135000,avgCost:0.2182,price:0.485,dayPct:0.0354,dayPL:2075,mktVal:65475,totalCost:29452.54,totalGain:36022.46,
    news:'https://finance.yahoo.com/quote/FFMGF/news/',ir:'https://www.firstmininggold.com/investors/',
-   lots:[{d:'Oct-18-2024',s:11111,c:0.10,tc:1111.10},{d:'Jun-03-2025',s:20000,c:0.13,tc:2600},{d:'Jun-09-2025',s:10000,c:0.14,tc:1400},{d:'Jun-17-2025',s:50000,c:0.15,tc:7500},{d:'Jun-20-2025',s:10000,c:0.15,tc:1500},{d:'Feb-23-2026',s:23889,c:0.46,tc:10967.44}]},
+   lots:[{d:'Oct-18-2024',s:11111,c:0.10,tc:1111.10},{d:'Jun-03-2025',s:20000,c:0.13,tc:2600},{d:'Jun-09-2025',s:10000,c:0.14,tc:1400},{d:'Jun-17-2025',s:50000,c:0.15,tc:7500},{d:'Jun-20-2025',s:10000,c:0.15,tc:1500},{d:'Feb-23-2026',s:23889,c:0.46,tc:10967.44},{d:'Mar-03-2026',s:10000,c:0.4374,tc:4374.00}]},
   {ticker:'WDOFF',name:'Wesdome Gold Mines Ltd.',type:'mid',shares:3000,avgCost:13.0667,price:19.628,dayPct:0.0159,dayPL:924,mktVal:58884,totalCost:39200,totalGain:19684,
    news:'https://finance.yahoo.com/quote/WDOFF/news/',ir:'https://www.wesdome.com/investors/',
    lots:[{d:'Jul-17-2025',s:1000,c:12.99,tc:12990},{d:'Jul-21-2025',s:1000,c:12.61,tc:12610},{d:'Aug-18-2025',s:500,c:11.82,tc:5910},{d:'Oct-21-2025',s:500,c:15.38,tc:7690}]},
-  {ticker:'BKRRF',name:'Blackrock Silver Corp.',type:'junior',shares:30000,avgCost:0.4115,price:1.702,dayPct:0.1347,dayPL:6060,mktVal:51060,totalCost:12346,totalGain:38714,
+  {ticker:'BKRRF',name:'Blackrock Silver Corp.',type:'junior',shares:33000,avgCost:0.5150,price:1.702,dayPct:0.1347,dayPL:6060,mktVal:56166,totalCost:16996,totalGain:39170,
    news:'https://finance.yahoo.com/quote/BKRRF/news/',ir:'https://blackrocksilver.com/investors/',
-   lots:[{d:'Jun-23-2025',s:10000,c:0.32,tc:3200},{d:'Jul-21-2025',s:10000,c:0.435,tc:4350},{d:'Sep-10-2025',s:10000,c:0.48,tc:4796}]},
+   lots:[{d:'Jun-23-2025',s:10000,c:0.32,tc:3200},{d:'Jul-21-2025',s:10000,c:0.435,tc:4350},{d:'Sep-10-2025',s:10000,c:0.48,tc:4796},{d:'Mar-03-2026',s:3000,c:1.55,tc:4650}]},
   {ticker:'AYASF',name:'Aya Gold & Silver Inc.',type:'mid',shares:1750,avgCost:10.2457,price:21.630,dayPct:0.0598,dayPL:2135,mktVal:37853,totalCost:17930,totalGain:19922.50,
    news:'https://finance.yahoo.com/quote/AYASF/news/',ir:'https://www.ayagoldsilver.com/investors/',
    lots:[{d:'Jun-23-2025',s:500,c:9.23,tc:4615},{d:'Aug-01-2025',s:1000,c:8.55,tc:8550},{d:'Jan-27-2026',s:250,c:19.06,tc:4765}]},
@@ -275,6 +275,9 @@ const H = [
   {ticker:'SLV',name:'iShares Silver Trust ETF',type:'etf',shares:150,avgCost:34.80,price:84.990,dayPct:0.0564,dayPL:681,mktVal:12749,totalCost:5220,totalGain:7528.50,
    news:'https://finance.yahoo.com/quote/SLV/news/',ir:'https://www.ishares.com/us/products/239855/',
    lots:[{d:'Jul-18-2025',s:150,c:34.80,tc:5220}]},
+  {ticker:'WPM',name:'Wheaton Precious Metals Corp.',type:'major',shares:70,avgCost:151.83,price:151.83,dayPct:0,dayPL:0,mktVal:10628.10,totalCost:10628.10,totalGain:0,
+   news:'https://finance.yahoo.com/quote/WPM/news/',ir:'https://www.wheatonpreciousmetals.com/investors/',
+   lots:[{d:'Mar-03-2026',s:70,c:151.83,tc:10628.10}]},
   {ticker:'SLVR',name:'Sprott Silver Miners ETF',type:'etf',shares:150,avgCost:31.73,price:83.360,dayPct:0.0364,dayPL:439.50,mktVal:12504,totalCost:4759.50,totalGain:7744.50,
    news:'https://finance.yahoo.com/quote/SLVR/news/',ir:'https://sprott.com/investment-strategies/etfs/silver-miners-etf/',
    lots:[{d:'Jul-28-2025',s:150,c:31.73,tc:4759.50}]},
@@ -397,7 +400,7 @@ function render(){
   const tot=document.createElement('tr');
   tot.className='totals-row';
   tot.innerHTML=`
-    <td colspan="2" style="font-family:var(--font-ui);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)">Total · 18 positions</td>
+    <td colspan="2" style="font-family:var(--font-ui);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3)">Total · 19 positions</td>
     <td></td><td></td><td></td>
     <td class="c-num ${tDay>=0?'positive':'negative'}">${$p(tDay/(tMV-tDay))}</td>
     <td class="c-num">$${$c(tMV)}</td>
@@ -470,60 +473,87 @@ function setBadge(state, text) {
 }
 
 async function fetchLivePrices() {
-  const APIKEY = 'f9ea8aecbc5447b09b7feb97cf0d5d5d';
+  const APIKEY = 'BAIYVBCTZLY7W61H';
 
-  // Split into exchange-listed and OTC — Twelve Data needs :PINK suffix for OTC
-  const listed = ['NGD','AEM','VGZ','GLD','SLV','SLVR'];
-  const otc    = ['BYAGF','AUMBF','FFMGF','WDOFF','BKRRF','AYASF','LGDTF','NFLDF','HWAUF','OCGSF','RGCCF','EMAUF'];
-
-  let updated = 0;
-
-  async function fetchGroup(symbols, suffix) {
-    const symStr = symbols.map(s => s + suffix).join(',');
-    const url = `https://api.twelvedata.com/price?symbol=${symStr}&apikey=${APIKEY}`;
-    const res = await fetch(url, {cache:'no-store'});
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    console.log('Twelve Data raw response:', symStr, JSON.stringify(data).slice(0,300));
-
-    symbols.forEach(ticker => {
-      const key = ticker + suffix;
-      // Batch returns object keyed by symbol; single returns object directly
-      const q = symbols.length === 1 ? data : data[key];
-      if (q && q.price && !q.code) {
-        const h = H.find(x => x.ticker === ticker);
-        if (h) {
-          const newPrice = parseFloat(q.price);
-          if (!isNaN(newPrice) && newPrice > 0) {
-            h.dayPct = h.price > 0 ? (newPrice - h.price) / h.price : 0;
-            h.price = newPrice;
-            updated++;
-          }
-        }
-      }
-    });
+  function lastCloseCacheKey() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const et  = new Date(utc - 4 * 3600000);
+    const d   = et.getDay(), h = et.getHours() + et.getMinutes()/60;
+    const pad = n => String(n).padStart(2,'0');
+    let ref = new Date(et);
+    if (d === 0)         ref.setDate(ref.getDate()-2);
+    else if (d === 6)    ref.setDate(ref.getDate()-1);
+    else if (h < 16.5) { ref.setDate(ref.getDate()-(d===1?3:1)); }
+    return `rjs_px_${ref.getFullYear()}-${pad(ref.getMonth()+1)}-${pad(ref.getDate())}`;
   }
+
+  const CACHE_KEY = lastCloseCacheKey();
 
   try {
-    await Promise.all([
-      fetchGroup(listed, ''),
-      fetchGroup(otc, ':PINK'),
-    ]);
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const prices = JSON.parse(cached);
+      let hits = 0;
+      H.forEach(h => {
+        if (prices[h.ticker]) {
+          h.price  = prices[h.ticker].price;
+          h.dayPct = prices[h.ticker].dayPct;
+          hits++;
+        }
+      });
+      if (hits > 0) {
+        recalcFromPrices(); updateSummary(); render();
+        setBadge('live', `Close · ${hits}/19 · ${prices._at||''}`);
+        return;
+      }
+    }
+  } catch(e) {}
 
-    if (updated === 0) throw new Error('No tickers updated');
+  const tickers = H.map(h => h.ticker);
+  let updated = 0;
+  const priceCache = {};
+  setBadge('loading', 'Fetching prices…');
 
-    recalcFromPrices();
-    updateSummary();
-    render();
-
-    const now = new Date();
-    const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    setBadge('live', `Live · ${updated}/18 · ${t}`);
-  } catch(e) {
-    console.warn('Price fetch failed:', e);
-    setBadge('stale', 'Static prices · Mar 1, 2026');
-    render();
+  for (let i = 0; i < tickers.length; i++) {
+    const ticker = tickers[i];
+    try {
+      const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${APIKEY}`;
+      const res  = await fetch(url, {cache:'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const q    = data['Global Quote'];
+      if (q && q['05. price'] && q['05. price'] !== '0.0000') {
+        const newPrice = parseFloat(q['05. price']);
+        const pctRaw   = parseFloat((q['10. change percent']||'').replace('%',''));
+        const h = H.find(x => x.ticker === ticker);
+        if (h && !isNaN(newPrice) && newPrice > 0) {
+          h.price  = newPrice;
+          h.dayPct = isNaN(pctRaw) ? 0 : pctRaw / 100;
+          priceCache[ticker] = { price: h.price, dayPct: h.dayPct };
+          updated++;
+        }
+      }
+    } catch(e) { console.warn('Failed:', ticker, e.message); }
+    if (i < tickers.length - 1) await new Promise(r => setTimeout(r, 300));
   }
+
+  if (updated === 0) {
+    setBadge('stale', 'Static prices · Mar 3, 2026');
+    render(); return;
+  }
+
+  const fetchedAt = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  priceCache._at = fetchedAt;
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(priceCache));
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('rjs_px_') && k !== CACHE_KEY)
+      .forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
+
+  recalcFromPrices(); updateSummary(); render();
+  setBadge('live', `Close · ${updated}/19 · ${fetchedAt}`);
 }
 
 /* ── INIT ─────────────────────────────────────────────── */

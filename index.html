@@ -507,17 +507,28 @@ async function fetchLivePrices() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
 
-    // Parse CSV — skip header row, columns: Ticker, GF_Symbol, Price, Day_Change_Pct
+    // Parse CSV properly — handles quoted fields with commas (e.g. "1,234.56")
+    function parseCSVRow(row) {
+      const cols = []; let cur = ''; let inQ = false;
+      for (let i = 0; i < row.length; i++) {
+        const c = row[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
+        else { cur += c; }
+      }
+      cols.push(cur);
+      return cols.map(c => c.trim());
+    }
     const rows = text.trim().split('\n').slice(1);
     let updated = 0;
     const priceCache = {};
 
     rows.forEach(row => {
-      const cols = row.split(',');
+      const cols = parseCSVRow(row);
       if (cols.length < 4) return;
-      const ticker  = cols[0].trim().replace(/"/g,'');
-      const price   = parseFloat(cols[2].trim().replace(/"/g,''));
-      const dayPct  = parseFloat(cols[3].trim().replace(/"/g,''));
+      const ticker  = cols[0].replace(/"/g,'');
+      const price   = parseFloat(cols[2].replace(/,/g,'').replace(/"/g,''));
+      const dayPct  = parseFloat(cols[3].replace(/,/g,'').replace(/"/g,''));
       const h = H.find(x => x.ticker === ticker);
       if (h && !isNaN(price) && price > 0) {
         h.price  = price;
